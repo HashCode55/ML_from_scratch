@@ -20,5 +20,6 @@ my_data=[['slashdot','USA','yes',18,'None'],
 
 t = dtree(fitness_function = 'information_gain')
 tree = t.build_tree(my_data)
-t.print_tree(tree)
+#t.print_tree(tree)
+print ("Your data point is classified as " + "'" + t.classify(tree, ['(direct)','USA','yes',5]) + "'")
 

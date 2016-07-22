@@ -126,5 +126,18 @@ class dtree():
 			print (indent+'right->', end = ' ')
 			self.print_tree(tree.right, indent = indent + '     ')
 
+	def classify(self, tree, row):
+		if tree.result != None:
+			return list(tree.result.keys())[0]
+		else:
+			branch = None
+			if isinstance(tree.cut_point, int) or isinstance(tree.cut_point, float):
+				if row[tree.attribute] >= tree.cut_point: branch = tree.left
+				else : branch = tree.right 
+			else:
+				if row[tree.attribute] == tree.cut_point: branch = tree.left
+				else : branch = tree.right
+			return self.classify(branch, row)		
+
 #COMPLETE THE BASIC STRUCTURE TOMORROW and they try hypothesis testing.			
 		
