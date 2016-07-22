@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 #decision_tree from scratch using the ID3 algorithm.
 #Assuming the input data is in the form of a dictionary 
 #                       Col1    Col2    Col3      
@@ -20,14 +21,22 @@ def divide_data(data, column, value):
 	"""
 	split_function = None 
 	if isinstance(value, int) or isinstance(value, float):
-		split_function = lambda row : row[column] < value
-	elif isinstance(value, basestring):
+		split_function = lambda row : row[column] >= value
+	elif isinstance(value, str):
 		split_function = lambda row : row[column] == value
 	else:
-		print "TypeError : Unsupported value type."
+		print ("TypeError : Unsupported value type.")
 	subset1 = [row for row in data if split_function(row)]
 	subset2 = [row for row in data if not split_function(row)]			
 	return (subset1, subset2)
+
+def unique_counts(data):
+	unique_ct = {}
+	for row in data:
+		if row[len(row) - 1] not in unique_ct:
+			unique_ct[row[len(row) - 1]] = 0
+		unique_ct[row[len(row) - 1]] += 1
+	return unique_ct		
 
 def entropy(data):
 	"""
@@ -36,11 +45,7 @@ def entropy(data):
 	:params: label data as `label`
 	:returns: Entropy of all the classes as a list
 	"""
-	unique_labels = {}
-	for _, row in enumerate(data):
-		if row[len(row) - 1] not in unique_labels: 
-			unique_labels[row[len(row) - 1]] = 0
-		unique_labels[row[len(row) - 1]] += 1 
+	unique_labels = unique_counts(data)
 	proportions = [float(i)/len(data) for i in unique_labels.values()]	
 	entropy = sum(-p*np.log2(p) for p in proportions)
 	return entropy
@@ -53,49 +58,73 @@ def information_gain(data, column, cut_point):
 	:params:attribute_index, labels of the node t as `labels` and cut point as `cut_point`
 	:returns: The net entropy of partition 
 	"""
-	subset1, subset2 = divide_data(data, column, cut_point)            
-	lensub1, lensub2 = len(subset1), len(subset2)
-	weighted_ent = (len(subset1)*entropy(subset1) + len(subset2)*entropy(subset2)) / len(data)
+	subset1, subset2 = divide_data(data, column, cut_point) 
+	lensub1, lensub2 = len(subset1), len(subset2)       
+	weighted_ent = (len(subset1)*entropy(subset1) + len(subset2)*entropy(subset2)) / len(data)  
 	if len(subset1) > 0 and len(subset2) > 0:
-		return (entropy(data) - weighted_ent, subset1, subset2)
+		return ((entropy(data) - weighted_ent), subset1, subset2)
 	else:
-	 	return 0	
+	 	return (0, subset1, subset2)	 		
 
-class decision_tree():
+class dtree():
 	#Every node will have a label
-	parent = None
 	attribute = None 
 	cut_point = None 
 	left = None
 	right = None
+	result = None
+	fitness_function = None
 
-	def __init__(self, parent = None, attribute = None, cut_point = None, left = None, right = None):
-		self.label_index = label_index
+	def __init__(self, attribute = None, cut_point = None, left = None, right = None, result = None, fitness_function = 'information_gain'):
+		self.attribute = attribute
+		self.cut_point = cut_point
+		self.left = left
+		self.right = right
+		self.result = result
+		if fitness_function ==  'information_gain':
+			self.fitness_function = information_gain
+		else:
+			print ("function allocation failed")	
 
-	def build_tree(self, rows, fitness_function = information_gain):
-		if len(rows) == 0: return decision_tree()	
+	def build_tree(self, rows):
+		if len(rows) == 0: return dtree()	
 
 		best_gain = 0
 		best_criteria = None
 		best_sets = None
-		for column in range(len(rows[0] - 1)):
+		for column in range(len(rows[0] ) - 1):
 			#the values to try splitting on
 			unique_vals = {}
 			for row in rows:
 				unique_vals[row[column]] = 1
 			#Now try to split at this column using every unique value it contains 	
 			for uv in  unique_vals.keys():
-				gain, sub1, sub2 = fitness_function(rows, column, uv)	
+				gain, sub1, sub2 = self.fitness_function(rows, column, uv)	
 				if gain > best_gain:
 					best_gain = gain
 					best_criteria = (column, uv)
 					best_sets = (sub1, sub2)
 		#Now at this point, in the first call our decision tree has experienced its first split 
 		#Now proceed only if best gain is worthful
+		#if the best gain is 0, it simply means the leaf is pure.
 		if best_gain > 0:
-			left = build_tree(sub1)	
-			right = build_tree(sub2)		
-			re 
+			left = self.build_tree(best_sets[0])
+			right = self.build_tree(best_sets[1])		
+			return dtree(attribute = best_criteria[0], cut_point = best_criteria[1], 
+				left = left, right = right)
+		else:
+			return dtree(result = unique_counts(rows))	
+
+
+	def print_tree(self, tree, indent = ' '):
+		if tree.result != None:
+			print (str(tree.result))
+		else:
+			print (str(tree.attribute) + ' : ' + str(tree.cut_point))	
+			print (indent+'left->', end = ' ')
+			self.print_tree(tree.left, indent = indent + '     ')
+			print (indent+'right->', end = ' ')
+			self.print_tree(tree.right, indent = indent + '     ')
 
 #COMPLETE THE BASIC STRUCTURE TOMORROW and they try hypothesis testing.			
 		

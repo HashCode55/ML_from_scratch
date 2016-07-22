@@ -1,4 +1,6 @@
-from decision_tree import entropy
+import decision_tree
+from decision_tree import dtree
+import decision_tree
 my_data=[['slashdot','USA','yes',18,'None'],
         ['google','France','yes',23,'Premium'],
         ['digg','USA','yes',24,'Basic'],
@@ -16,4 +18,7 @@ my_data=[['slashdot','USA','yes',18,'None'],
         ['google','UK','yes',18,'Basic'],
         ['kiwitobes','France','yes',19,'Basic']]
 
-print entropy(my_data)
+t = dtree(fitness_function = 'information_gain')
+tree = t.build_tree(my_data)
+t.print_tree(tree)
+
