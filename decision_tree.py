@@ -48,7 +48,7 @@ def entropy(data):
 	unique_labels = unique_counts(data)
 	proportions = [float(i)/len(data) for i in unique_labels.values()]	
 	entropy = sum(-p*np.log2(p) for p in proportions)
-	return entropy
+	return entropy	
 
 def information_gain(data, column, cut_point):
 	"""
