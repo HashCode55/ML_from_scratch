@@ -6,22 +6,90 @@ import random
 
 #third party library
 import numpy as np
+class CrossEntropyCost(object):
+	"""
+	Methods for cross entropy function
+	"""
+	@staticmethod
+	def fn(a, y):
+		"""
+		The main cross entropy function 
+		params : a - activations of of current neuron layer 
+			   y - expected outputs 
+		"""
+		return np.sum(np.nan_to_num(-y*np.log(a)-(1-y)*np.log(1-a)))
+	@staticmethod	
+	def delta(z, a, y):
+		"""
+		Output error for the cross entropy funciton
+		"""
+		return a-y	
+
+class QuadraticCost(object):
+	"""
+	Methods for the old-school quadratic cost function 
+	"""
+	@staticmethod
+	def fn(a, y):
+		"""
+		The main quadratic cost function
+		params : a - activations of of current neuron layer 
+			   y - expected outputs 
+		"""		
+		return 0.5*np.linalg.norm(a-y)**2
+	@staticmethod
+	def delta(z, a, y):
+		"""
+		The first back propogation equation also used this
+		"""
+		return (a-y)*sigmoid_prime(z)	
 
 class NeuralNet(object):
-	def __init__(self, sizes):
+	"""
+	Process explained - 
+		- Constructor gets called, random weights are assigned to the whole neural network. 
+		  Infact what the ultimate motive in NN is to train the weights and the bias only.
+		- We do so using SGD in this code (The BEAST). So yeah, now we call stochastic_gradient 
+		  method.  
+	"""
+	def __init__(self, sizes, cost=CrossEntropyCost, weight=None):
 		"""
 		Class constructor 
 		params : sizes is the array containing the neurons in each 
+			   cost - the cost function used while estimating the gradients 
+			             previously it was quadratic cost but now by default its the
+			             cross entropy function.			
 		layer.
 		"""
 		self.num_layers = len(sizes)
 		self.sizes = sizes
-		#assigning random biases 
-		#now just try to visualise the neural network....
-		self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
-		self .weights = [np.random.randn(y, x) 
-			for x, y in zip(sizes[:-1], sizes[1:])]
+		#initialize the cost
+		self.cost = cost
+		#Initialise the weights 
+		if weight == None:
+			self.default_weight_initialiser()
+		else:
+			self.large_weight_initializer()	
 
+	def default_weight_initialiser(self):
+		"""
+		Its used to initialise the weights and biases according to the modified method.
+		Previously random variables from the standard normal distribution(mean 0 and std 1) 
+		were taken. 
+		But now its a bit modified to make the learning faster of the neural network.
+		"""		
+		self.biases = [np.random.randn(x, 1) for x in sizes[1:]]
+		self.weights = [np.random.randn(y, x) / np.sqrt(x) 
+				for x, y in zip(self.sizes[:-1], self.sizes[1:])]
+
+	def large_weight_initializer(self):
+		"""
+		The previous method of initialising the weights.
+		"""
+        		self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
+        		self.weights = [np.random.randn(y, x) 
+                        		for x, y in zip(self.sizes[:-1], self.sizes[1:])]
+			
 
 	def feed_forward(self, a):
 			
