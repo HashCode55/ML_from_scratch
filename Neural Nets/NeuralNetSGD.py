@@ -138,6 +138,8 @@ class NeuralNet(object):
 			random.shuffle(training_data)
 			mini_batches = [training_data[k: k + mini_batch_size]
 			    for k in xrange(0, n, mini_batch_size)]
+			#so instead of updating the gradient on the basis of 
+			#whole dataset we supply a subset of it.    
 			for mini_batch in mini_batches:
 				self.update_params(mini_batch, eta, lmda, n)
 			print "Epoch %s training complete" % epoch

@@ -1,2 +1,10 @@
-k = [1, 2, 3, 4, 5]
-print k[:-1]
+import numpy as np 
+
+k = np.random.normal(
+	loc = 0.0,
+	scale = 1.0,
+	size = (2, 4)
+	)
+
+k.reshape(4, 2)
+print (k)
