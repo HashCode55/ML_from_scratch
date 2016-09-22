@@ -22,11 +22,18 @@ from theano.tensor import tanh
 class FullyConnectedLayer(onject):
 
 	def __init__(self, input_n, output_n, activation_fn = sigmoid, p_dropout = 0.0):
+		"""
+		Constructor for the fully connected layer. 
+		params: input_n-The number of input neurons 
+			  output_n-The number of outputs 
+			  activation_fn-The activation function used, sigmoid by default 
+			  p_dropout-the fraction of neurons selected for dropout 
+		"""
 		self.input_n = input_n
 		self.output_n = output_n
 		self.activation_fn = activation_fn
 		self.p_dropout = p_dropout
-		#initialise the weights and the biases 
+		#initialise the weights and the biases 		
 		self.w = theano.shared(
 			np.asarray(
 				np.random.normal(
@@ -47,22 +54,91 @@ class FullyConnectedLayer(onject):
 			name='b',
 			borrow=True
 		)
+		#pack the params for easier use
 		self.params=[self.w, self.b]
 
 	def set_inpt(self, inpt, inpt_dropout, mini_batch_size):
-		self.inpt = inpt.reshape(mini_batch_size, self.input_n)
+		"""
+		The PowerHouse. Takes the input, computes the output and 
+		stores it as class variables to make it accessible by further layers 
+		and for backpropogation too. 
+		params: inpt-The input data 
+			  inpt_dropout-Input data separated for dropout 
+			  mini_batch_size-Number of training data used 
+		"""
+		self.inpt = inpt.reshape((mini_batch_size, self.input_n))
 		self.output = self.activation_fn(
-			(1-self.p_dropout)*T.dot(self.inpt, self.w) + self.b
-		self.	
-		self.output_dropout = 
+			(1-self.p_dropout)*T.dot(self.inpt, self.w) + self.b)
+
+		self.y_out = T.argmax(self.output, axis=1)	
+		self.inpt_dropout = dropout_layer(
+			inpt_dropout.reshape((mini_batch_size, self.input_n)), 
+			self.p_dropout)
+		self.output_dropout = self.activation_fn(
+			T.dot(self.inpt_dropout, self.w) + self.b)
+
+	def accuracy(self, y):
+		"""
+		Return the accuracy the layer 
+		params: y-the original output 
+		"""
+		return T.mean(T.eq(y, self.y_out))
 
 class ConvolutionalLayer(object):
 
 	def __init__(self, input_n, output_m, ):		 
+
 		
 class SoftmaxLayer(object):
 
-	def __init__(self, input_n, output_n, ):		
+	def __init__(self, input_n, output_n, p_dropout=0.0):		
+		self.input_n = input_n
+		self.output_n = output_n
+		self.p_dropout = p_dropout
+		self.w = theano.shared(
+			np.asarray(
+				np.random.normal(
+					loc=0.0,
+					scale=np.sqrt(1.0/self.output_n),
+					size=(self.input_n, self.output_n)),
+				dtype=theano.config.floatX
+				)
+			name='w',
+			borrow=True
+			)
+		self.b = theano.shared(
+			np.asarray(
+				np.random.normal(
+					loc=0.0,
+					scale=np.sqrt(1.0/self.output_n),
+					size=(output_n, )),
+				dtype=theano.config.floatX
+				)
+			name='b',
+			borrow=True
+			)
+		self.params = [self.w, self.b]
+		
+	def set_inpt(self, inpt, inpt_dropout, mini_batch_size):
+		self.inpt = inpt.reshape((mini_batch_size, self.input_n))
+		self.output = softmax((1-p_dropout)*T.dot(self.inpt, self.w) + self.b)
+		self.y_out = T.argmax(self.output, axis=1)
+		self.inpt_dropout = dropout_layer(
+            			inpt_dropout.reshape((mini_batch_size, self.input_n)), self.p_dropout)
+        		self.output_dropout = softmax(T.dot(self.inpt_dropout, self.w) + self.b)	
+
+        	def cost(self):
+        		"""
+        		Return the log likelihood cost(cost used by the softmax layer)
+        		"""
+        		return T.mean()
+        	def accuracy(self, y):
+        		"""
+		Return the accuracy the layer 
+		params: y-the original output 
+		"""
+        		return T.mean(T.eq(self.y_out, y))
+
 		
 class Network(object):
 	def __init__(self, layers, mini_batch_size):
@@ -100,6 +176,8 @@ class Network(object):
 		test_batch_num = size(test_data)/self.mini_batch_size
 
 		l2_norm_term = sum([(layer.w**2).sum() for layer in self.layers])
+		#The equation for the net cost, is dependent upin th cost 
+		#used 
 		cost = self.layers[-1].cost(self) + 0.5*l2_norm_term/training_batch_num
 		#this is the backpropogation step
 		grads = T.grad(cost, self.params)
@@ -161,3 +239,10 @@ class Network(object):
 								test_accuracy(x) for x in range(test_batch_num))
 						print ("Test accuracy corresponding to the best validation accuracy, at {0} epoch is {1:.2%}".format(
 							epoch, test_acc))
+
+
+def dropout_layer(layer, p_dropout):
+	srng = shared_randomstreams.RandomStreams(
+		np.random.RandomState(0).randint(999999))
+	mask = srng.binomial(n=1, p=1-p_dropout, size=layer.shape)
+	return layer*T.cast(mask, theano.config.floatX)						
