@@ -51,20 +51,20 @@ def entropy(data):
 	return entropy	
 
 def information_gain(data, column, cut_point):
-    	"""
-    	For calculating the goodness of a split. The difference of the entropy of parent and 
-    	the weighted entropy of children.
-    	:params:attribute_index, labels of the node t as `labels` and cut point as `cut_point`
-    	:returns: The net entropy of partition 
-    	"""
-    	subset1, subset2 = divide_data(data, column, cut_point) 
-    	lensub1, lensub2 = len(subset1), len(subset2)  
-    	#if the node is pure return 0 entropy
-    	if len(subset1) == 0 or len(subset2) == 0:
-        		return (0, subset1, subset2)     
-            #else calculate the weighted entropy 	
-    	weighted_ent = (len(subset1)*entropy(subset1) + len(subset2)*entropy(subset2)) / len(data)  
-    	return ((entropy(data) - weighted_ent), subset1, subset2)	 		
+	"""
+	For calculating the goodness of a split. The difference of the entropy of parent and 
+	the weighted entropy of children.
+	:params:attribute_index, labels of the node t as `labels` and cut point as `cut_point`
+	:returns: The net entropy of partition 
+	"""
+	subset1, subset2 = divide_data(data, column, cut_point) 
+	lensub1, lensub2 = len(subset1), len(subset2)  
+	#if the node is pure return 0 entropy
+	if len(subset1) == 0 or len(subset2) == 0:
+		return (0, subset1, subset2)     
+	#else calculate the weighted entropy 	
+	weighted_ent = (len(subset1)*entropy(subset1) + len(subset2)*entropy(subset2)) / len(data)  
+	return ((entropy(data) - weighted_ent), subset1, subset2)	 		
 
 class dtree():
 	#Every node will have a label
