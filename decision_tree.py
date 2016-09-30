@@ -140,4 +140,3 @@ class dtree():
 			return self.classify(branch, row)		
 
 #COMPLETE THE BASIC STRUCTURE TOMORROW and they try hypothesis testing.			
-		
