@@ -39,7 +39,7 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
-from tensorflow.models.image.cifar10 import cifar10
+import cifar10
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -54,10 +54,12 @@ tf.app.flags.DEFINE_boolean('log_device_placement', False,
 
 def train():
   """Train CIFAR-10 for a number of steps."""
+  #start a default graph 
   with tf.Graph().as_default():
     global_step = tf.Variable(0, trainable=False)
 
     # Get images and labels for CIFAR-10.
+    #get the distorted inputs 
     images, labels = cifar10.distorted_inputs()
 
     # Build a Graph that computes the logits predictions from the
@@ -72,9 +74,11 @@ def train():
     train_op = cifar10.train(loss, global_step)
 
     # Create a saver.
+    #--?--
     saver = tf.train.Saver(tf.all_variables())
 
     # Build the summary operation based on the TF collection of Summaries.
+    #--?--
     summary_op = tf.merge_all_summaries()
 
     # Build an initialization operation to run below.
@@ -118,12 +122,12 @@ def train():
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  cifar10.maybe_download_and_extract()
-  if tf.gfile.Exists(FLAGS.train_dir):
+  #cifar10.maybe_download_and_extract()
+  if os.path.exists(FLAGS.train_dir):
+    print ("wjke")
     tf.gfile.DeleteRecursively(FLAGS.train_dir)
   tf.gfile.MakeDirs(FLAGS.train_dir)
   train()
-
 
 if __name__ == '__main__':
   tf.app.run()
